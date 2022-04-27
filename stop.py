@@ -7,7 +7,7 @@ logger.setLevel(logging.INFO)
 ec2 = boto3.resource('ec2')
 def lambda_handler(event, context):
 
-    filters = [{'Name': 'tag:AutoOff', 'Values': ['yes']}, {'Name': 'instance-state-name', 'Values': ['running']}]
+    filters = [{'Name': 'tag:AutoTermination', 'Values': ['True']}, {'Name': 'instance-state-name', 'Values': ['running']}]
     instances = ec2.instances.filter(Filters=filters)
     RunningInstances = [instance.id for instance in instances]
     
