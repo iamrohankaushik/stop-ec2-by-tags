@@ -1,18 +1,21 @@
 import boto3
-import logging
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+from datetime import datetime 
 
-ec2 = boto3.resource('ec2')
+ec2 = boto3.resource('ec2', region_name='ap-south-1')
 def lambda_handler(event, context):
 
-    filters = [{'Name': 'tag:AutoTermination', 'Values': ['True']}, {'Name': 'instance-state-name', 'Values': ['running']}]
-    instances = ec2.instances.filter(Filters=filters)
-    RunningInstances = [instance.id for instance in instances]
+    now = datetime.now() 
+    current_time = now.strftime("%H") 
+    print("Current Time is :", current_time)
     
-    if len(RunningInstances) > 0:
-        shuttingDown = ec2.instances.filter(InstanceIds=RunningInstances).stop()
-        print("ShuttingDown")
+    tagfilter = [{'Name': 'tag:Schedule_On_Off', 'Values': ['Yes']}, {'Name': 'instance-state-name', 'Values': ['running']}, {'Name': 'tag:StopHrs', 'Values': [current_time]}]
+    RunningInstances = ec2.instances.filter(Filters=tagfilter)
+    ScheduledInstances = [instance.id for instance in RunningInstances]
+    print(ScheduledInstances)
+    
+    if len(ScheduledInstances) > 0:
+        ec2.instances.filter(InstanceIds=ScheduledInstances).stop()
+        print("Shutting Down" + str(ScheduledInstances))
     else:
         print("Nothing to see here")
